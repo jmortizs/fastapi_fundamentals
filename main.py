@@ -1,4 +1,5 @@
 from typing import Optional
+from unittest import result
 from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi import Query
@@ -14,6 +15,11 @@ class Person(BaseModel):
     age: int
     hair_color: Optional[str] = None
     is_married: Optional[bool] = None
+
+class Location(BaseModel):
+    city: str
+    state: str
+    country: str
 
 @app.get('/')
 def home():
@@ -39,7 +45,7 @@ def show_person(
         title='Person age.',
         description='This is the person age. Grater than 0. Requiered.'
         ) # query parameters are usually optional, if it is required then it must be a path parameters
-    ):
+):
     return {name: age}
 
 # Validations: path parameters
@@ -51,5 +57,22 @@ def show_person(
         title='Person ID',
         description='This is the person identification number. Greater than 1. Required'
         )
-    ):
+):
     return {person_id: 'It exists'}
+
+# Validations: request body
+@app.put('/person/{person_id}')
+def update_person(
+    person_id: int = Path(
+        ...,
+        get=0,
+        title='Person ID',
+        description='This is the person identification number. Greater than 1. Required'
+        ),
+    person: Person = Body(...),
+    location: Location = Body(...)
+):
+    results = person.dict()
+    results.update(location.dict())
+
+    return result
