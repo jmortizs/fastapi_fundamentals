@@ -1,6 +1,8 @@
 from typing import Optional
-from unittest import result
+from enum import Enum
 from pydantic import BaseModel
+from pydantic import Field
+from pydantic import EmailStr
 from fastapi import FastAPI
 from fastapi import Query
 from fastapi import Body
@@ -9,12 +11,20 @@ from fastapi import Path
 app = FastAPI()
 
 # Models
+class HairColor(Enum):
+    white = 'white'
+    brown = 'brown'
+    black = 'black'
+    red = 'red'
+    blonde = 'blonde'
+
 class Person(BaseModel):
-    first_name: str
-    last_name: str
-    age: int
-    hair_color: Optional[str] = None
-    is_married: Optional[bool] = None
+    first_name: str = Field(..., min_length=1, max_length=50, title='Person Name')
+    last_name: str = Field(..., min_length=1, max_length=50, title='Person Name')
+    age: int = Field(..., gt=0, le=120)
+    email: EmailStr = Field(...)
+    hair_color: Optional[HairColor] = Field(default=None)
+    is_married: Optional[bool] = Field(default=None)
 
 class Location(BaseModel):
     city: str
@@ -75,4 +85,4 @@ def update_person(
     results = person.dict()
     results.update(location.dict())
 
-    return result
+    return results
