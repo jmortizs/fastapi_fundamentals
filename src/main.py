@@ -1,14 +1,8 @@
-from typing import Optional
 from enum import Enum
-from unicodedata import name
-from pydantic import BaseModel
-from pydantic import Field
-from pydantic import EmailStr
-from fastapi import FastAPI
-from fastapi import Query
-from fastapi import Body
-from fastapi import Path
-from fastapi import status
+from typing import Optional
+
+from fastapi import Body, FastAPI, Form, Path, Query, status
+from pydantic import BaseModel, EmailStr, Field
 
 app = FastAPI()
 
@@ -38,6 +32,10 @@ class Location(BaseModel):
     city: str
     state: str
     country: str
+
+class LoginOutput(BaseModel):
+    username: str = Field(..., min_length=3, max_length=20, example='jmos')
+    message: str = Field(default='Logging Succesfuly!')
 
 @app.get(path='/', status_code=status.HTTP_200_OK)
 def home():
@@ -94,3 +92,8 @@ def update_person(
     results.update(location.dict())
 
     return results
+
+@app.post(path='/loging', response_model=LoginOutput, status_code=status.HTTP_200_OK)
+def login(username: str = Form(...), password: str = Form(...)):
+
+    return LoginOutput(username=username)
