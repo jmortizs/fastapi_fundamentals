@@ -1,5 +1,6 @@
 from typing import Optional
 from enum import Enum
+from unicodedata import name
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import EmailStr
@@ -25,6 +26,16 @@ class Person(BaseModel):
     email: EmailStr = Field(...)
     hair_color: Optional[HairColor] = Field(default=None)
     is_married: Optional[bool] = Field(default=None)
+    password: str = Field(..., min_length=8)
+
+class PersonOut(BaseModel):
+    first_name: str = Field(..., min_length=1, max_length=50, title='Person Name')
+    last_name: str = Field(..., min_length=1, max_length=50, title='Person Name')
+    age: int = Field(..., gt=0, le=120)
+    email: EmailStr = Field(...)
+    hair_color: Optional[HairColor] = Field(default=None)
+    is_married: Optional[bool] = Field(default=None)
+
 
 class Location(BaseModel):
     city: str
@@ -36,7 +47,7 @@ def home():
     return {"Hello": "World"}
 
 # Request and response body
-@app.post('/person/new')
+@app.post('/person/new', response_model=PersonOut)
 def create_person(person: Person = Body(...)): # ... means that is required
     return person
 
