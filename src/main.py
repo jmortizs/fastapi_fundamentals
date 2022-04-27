@@ -40,17 +40,32 @@ class LoginOutput(BaseModel):
     username: str = Field(..., min_length=3, max_length=20, example='jmos')
     message: str = Field(default='Logging Succesfuly!')
 
-@app.get(path='/', status_code=status.HTTP_200_OK)
+@app.get(path='/', status_code=status.HTTP_200_OK, tags=['Home'])
 def home():
+    """
+    API root.
+
+    Returns:
+        dict: {"Hello": "World"}
+    """
     return {"Hello": "World"}
 
 # Request and response body
-@app.post(path='/person/new', response_model=PersonOut, status_code=status.HTTP_201_CREATED)
+@app.post(path='/person/new', response_model=PersonOut, status_code=status.HTTP_201_CREATED, tags=['Persons'])
 def create_person(person: Person = Body(...)): # ... means that is required
+    """
+    Creates a new person in the app and save the information  in the database.
+
+    Args:
+    - person (Person, optional): a person model. Defaults to Body(...).
+
+    Returns:
+        person: person model
+    """
     return person
 
 # Validations: Query parameters
-@app.get(path='/person/detail', status_code=status.HTTP_200_OK)
+@app.get(path='/person/detail', status_code=status.HTTP_200_OK, tags=['Persons'], deprecated=True)
 def show_person(
     name: Optional[str] = Query(
         default=None,
@@ -70,7 +85,7 @@ def show_person(
 # Validations: path parameters
 person_ids = [1, 2, 3, 4, 5]
 
-@app.get(path='/person/detail/{person_id}', status_code=status.HTTP_200_OK)
+@app.get(path='/person/detail/{person_id}', status_code=status.HTTP_200_OK, tags=['Persons'])
 def show_person(
     person_id: int = Path(
         ...,
@@ -79,13 +94,25 @@ def show_person(
         description='This is the person identification number. Greater than 1. Required'
         )
 ):
+    """
+    Check if person exists given they ID.
+
+    Args:
+        person_id (int, optional): Person ID number.
+
+    Raises:
+        HTTPException: Raise 404 if person doesn't exists
+
+    Returns:
+        dict: answer.
+    """
     if person_id not in person_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This doesn't exists")
 
     return {person_id: 'It exists'}
 
 # Validations: request body
-@app.put(path='/person/{person_id}', status_code=status.HTTP_200_OK)
+@app.put(path='/person/{person_id}', status_code=status.HTTP_200_OK, tags=['Persons'])
 def update_person(
     person_id: int = Path(
         ...,
@@ -102,13 +129,13 @@ def update_person(
     return results
 
 # Forms
-@app.post(path='/loging', response_model=LoginOutput, status_code=status.HTTP_200_OK)
+@app.post(path='/loging', response_model=LoginOutput, status_code=status.HTTP_200_OK, tags=['Loging'])
 def login(username: str = Form(...), password: str = Form(...)):
 
     return LoginOutput(username=username)
 
 # Cookies and headers
-@app.post(path='/contact', status_code=status.HTTP_200_OK)
+@app.post(path='/contact', status_code=status.HTTP_200_OK, tags=['Contact'])
 def contact(
     first_name: str = Form(..., max_length=20, min_length=1),
     last_name: str = Form(..., max_length=20, min_length=1),
@@ -121,7 +148,7 @@ def contact(
     return user_agent
 
 # Files
-@app.post(path='/post-image')
+@app.post(path='/post-image', tags=['Upload_files'])
 def post_image(image: UploadFile = File(...)):
 
     return {
