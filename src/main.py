@@ -1,7 +1,10 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import Body, Cookie, FastAPI, Form, File, Header, Path, Query, UploadFile, status
+from fastapi import Body, Cookie, Form, File, Header, Path, Query, UploadFile
+from fastapi import HTTPException
+from fastapi import FastAPI
+from fastapi import status
 from pydantic import BaseModel, EmailStr, Field
 
 app = FastAPI()
@@ -65,6 +68,8 @@ def show_person(
     return {name: age}
 
 # Validations: path parameters
+person_ids = [1, 2, 3, 4, 5]
+
 @app.get(path='/person/detail/{person_id}', status_code=status.HTTP_200_OK)
 def show_person(
     person_id: int = Path(
@@ -74,6 +79,9 @@ def show_person(
         description='This is the person identification number. Greater than 1. Required'
         )
 ):
+    if person_id not in person_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This doesn't exists")
+
     return {person_id: 'It exists'}
 
 # Validations: request body
